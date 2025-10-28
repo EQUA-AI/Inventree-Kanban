@@ -2,14 +2,12 @@
 
 from plugin import InvenTreePlugin
 
-from plugin.mixins import NavigationMixin, SettingsMixin, UserInterfaceMixin
+from plugin.mixins import SettingsMixin, UserInterfaceMixin
 
 from . import PLUGIN_VERSION
 
 
-class WorkOrderKanban(
-    NavigationMixin, SettingsMixin, UserInterfaceMixin, InvenTreePlugin
-):
+class WorkOrderKanban(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
     """WorkOrderKanban - custom InvenTree plugin."""
 
     # Plugin metadata
@@ -67,17 +65,18 @@ class WorkOrderKanban(
 
         return panels
 
-    # Navigation tab in top menu
+    # Navigation tab in top menu (uses UserInterfaceMixin method)
     def get_ui_navigation_items(self, request, context: dict, **kwargs):
-        """Add a navigation tab to the top menu bar."""
+        """Add a navigation tab to the top menu bar that opens the Kanban panel."""
 
         return [
             {
-                "key": "kanban-nav",
+                "key": "kanban-page",
                 "title": "Kanban",
                 "icon": "ti:layout-kanban",
                 "options": {
-                    "url": "/panel/work-order-kanban-panel/",
+                    # Link to the panel using the panel feature type
+                    "url": "/platform/plugin:work-order-kanban-panel",
                 },
             }
         ]
