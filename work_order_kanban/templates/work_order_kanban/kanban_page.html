@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Order Kanban</title>
+</head>
+<body>
+    <div id="kanban-root"></div>
+    
+    <!-- Load the compiled JavaScript module -->
+    <script type="module">
+        // Import the panel rendering function
+        import { renderWorkOrderKanbanPanel } from '{% load static %}{% static "plugins/work-order-kanban/Panel.js" %}';
+        
+        // Get the target element
+        const target = document.getElementById('kanban-root');
+        
+        // Prepare context data (you can pass settings or other data here)
+        const context = {
+            settings: {},
+            // Add any other context needed
+        };
+        
+        // Render the component
+        renderWorkOrderKanbanPanel(target, context);
+    </script>
+</body>
+</html>

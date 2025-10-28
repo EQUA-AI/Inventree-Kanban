@@ -44,13 +44,14 @@ class WorkOrderKanban(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
     # User interface elements (from UserInterfaceMixin)
     # Ref: https://docs.inventree.org/en/latest/plugins/mixins/ui/
 
-    # Custom UI panels
+    # Custom UI panels - standalone panel (not tied to a specific model context)
     def get_ui_panels(self, request, context: dict, **kwargs):
         """Return a list of custom panels to be rendered in the InvenTree user interface."""
 
         panels = []
 
         # Display panel as a standalone page (not tied to a specific model)
+        # We make this always visible by not checking target_model/target_id
         panels.append({
             "key": "work-order-kanban-panel",
             "title": "Work Order Kanban",
@@ -75,8 +76,8 @@ class WorkOrderKanban(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
                 "title": "Kanban",
                 "icon": "ti:layout-kanban",
                 "options": {
-                    # Link to the panel using the panel feature type
-                    "url": "/platform/plugin:work-order-kanban-panel",
+                    # Simple URL path - InvenTree will handle routing to the plugin panel
+                    "url": "/kanban",
                 },
             }
         ]
