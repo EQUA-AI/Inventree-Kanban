@@ -2,12 +2,14 @@
 
 from plugin import InvenTreePlugin
 
-from plugin.mixins import SettingsMixin, UserInterfaceMixin
+from plugin.mixins import NavigationMixin, SettingsMixin, UserInterfaceMixin
 
 from . import PLUGIN_VERSION
 
 
-class WorkOrderKanban(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
+class WorkOrderKanban(
+    NavigationMixin, SettingsMixin, UserInterfaceMixin, InvenTreePlugin
+):
     """WorkOrderKanban - custom InvenTree plugin."""
 
     # Plugin metadata
@@ -26,8 +28,8 @@ class WorkOrderKanban(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
     # MIN_VERSION = '0.18.0'
     # MAX_VERSION = '2.0.0'
 
-    # Render custom UI elements to the plugin settings page
-    ADMIN_SOURCE = "Settings.js:renderPluginSettings"
+    # Disable admin settings UI for now (Settings.js has errors)
+    # ADMIN_SOURCE = "Settings.js:renderPluginSettings"
 
     # Plugin settings (from SettingsMixin)
     # Ref: https://docs.inventree.org/en/latest/plugins/mixins/settings/
@@ -50,24 +52,35 @@ class WorkOrderKanban(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
 
         panels = []
 
-        # Only display this panel for the 'part' target
-        if context.get("target_model") == "part":
-            panels.append({
-                "key": "work-order-kanban-panel",
-                "title": "Work Order Kanban",
-                "description": "Custom panel description",
-                "icon": "ti:mood-smile:outline",
-                "source": self.plugin_static_file(
-                    "Panel.js:renderWorkOrderKanbanPanel"
-                ),
-                "context": {
-                    # Provide additional context data to the panel
-                    "settings": self.get_settings_dict(),
-                    "foo": "bar",
-                },
-            })
+        # Display panel as a standalone page (not tied to a specific model)
+        panels.append({
+            "key": "work-order-kanban-panel",
+            "title": "Work Order Kanban",
+            "description": "Unified Kanban view for Build, Purchase, and Sales Orders",
+            "icon": "ti:layout-kanban",
+            "source": self.plugin_static_file("Panel.js:renderWorkOrderKanbanPanel"),
+            "context": {
+                # Provide additional context data to the panel
+                "settings": self.get_settings_dict(),
+            },
+        })
 
         return panels
+
+    # Navigation tab in top menu
+    def get_ui_navigation_items(self, request, context: dict, **kwargs):
+        """Add a navigation tab to the top menu bar."""
+
+        return [
+            {
+                "key": "kanban-nav",
+                "title": "Kanban",
+                "icon": "ti:layout-kanban",
+                "options": {
+                    "url": "/panel/work-order-kanban-panel/",
+                },
+            }
+        ]
 
     # Custom dashboard items
     def get_ui_dashboard_items(self, request, context: dict, **kwargs):
