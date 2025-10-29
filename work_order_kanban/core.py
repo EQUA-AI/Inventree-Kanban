@@ -37,11 +37,12 @@ class WorkOrderKanban(
     NAVIGATION_TAB_ICON = "ti:layout-kanban"
 
     # Navigation links - uses Django URL pattern names
-    # Format: plugin:<plugin-slug>:<url-name>
+    # Format: plugin:<plugin-slug-with-underscores>:<url-name>
+    # Note: Django URL namespaces use underscores, not dashes
     NAVIGATION = [
         {
             "name": "Kanban Board",
-            "link": "plugin:work-order-kanban:kanban-board",
+            "link": "plugin:work_order_kanban:kanban-board",
             "icon": "ti:layout-kanban",
         }
     ]
