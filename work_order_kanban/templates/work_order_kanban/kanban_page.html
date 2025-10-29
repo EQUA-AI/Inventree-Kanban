@@ -1,9 +1,23 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Work Order Kanban</title>
+    <title>Work Order Kanban - InvenTree</title>
+    
+    <!-- Include InvenTree base styles if needed -->
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        #kanban-root {
+            width: 100%;
+            min-height: 100vh;
+        }
+    </style>
 </head>
 <body>
     <div id="kanban-root"></div>
@@ -11,19 +25,37 @@
     <!-- Load the compiled JavaScript module -->
     <script type="module">
         // Import the panel rendering function
-        import { renderWorkOrderKanbanPanel } from '{% load static %}{% static "plugins/work-order-kanban/Panel.js" %}';
+        // Note: Using the plugin's static file path
+        import { renderWorkOrderKanbanPanel } from '{% static "plugins/work-order-kanban/Panel.js" %}';
         
         // Get the target element
         const target = document.getElementById('kanban-root');
         
-        // Prepare context data (you can pass settings or other data here)
+        // Prepare context data - simulating InvenTree plugin context
         const context = {
+            // User information (if available from Django template context)
+            user: {
+                username: () => '{{ user.username }}',
+                isStaff: () => {{ user.is_staff|lower }},
+                isSuperuser: () => {{ user.is_superuser|lower }}
+            },
+            // Plugin settings
             settings: {},
+            // API instance would be initialized here
+            api: null,
             // Add any other context needed
+            context: {
+                settings: {}
+            }
         };
         
-        // Render the component
-        renderWorkOrderKanbanPanel(target, context);
+        // Render the Kanban board
+        try {
+            renderWorkOrderKanbanPanel(target, context);
+        } catch (error) {
+            console.error('Error rendering Kanban board:', error);
+            target.innerHTML = '<div style="color: red; padding: 20px;">Error loading Kanban board. Check console for details.</div>';
+        }
     </script>
 </body>
 </html>

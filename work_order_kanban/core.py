@@ -2,12 +2,12 @@
 
 from plugin import InvenTreePlugin
 
-from plugin.mixins import SettingsMixin, UserInterfaceMixin
+from plugin.mixins import SettingsMixin, UrlsMixin, UserInterfaceMixin
 
 from . import PLUGIN_VERSION
 
 
-class WorkOrderKanban(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
+class WorkOrderKanban(SettingsMixin, UrlsMixin, UserInterfaceMixin, InvenTreePlugin):
     """WorkOrderKanban - custom InvenTree plugin."""
 
     # Plugin metadata
@@ -41,34 +41,30 @@ class WorkOrderKanban(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
         }
     }
 
-    # User interface elements (from UserInterfaceMixin)
-    # Ref: https://docs.inventree.org/en/latest/plugins/mixins/ui/
+    # URL routing (from UrlsMixin)
+    # Ref: https://docs.inventree.org/en/stable/plugins/mixins/urls/
+    def setup_urls(self):
+        """Setup URL endpoints for this plugin.
 
-    # Custom UI panels - standalone panel (not tied to a specific model context)
-    def get_ui_panels(self, request, context: dict, **kwargs):
-        """Return a list of custom panels to be rendered in the InvenTree user interface."""
+        The URLs will be accessible at /plugin/work-order-kanban/<path>
+        """
+        from django.urls import path
+        from django.views.generic import TemplateView
 
-        panels = []
-
-        # Display panel as a standalone page (not tied to a specific model)
-        # We make this always visible by not checking target_model/target_id
-        panels.append({
-            "key": "work-order-kanban-panel",
-            "title": "Work Order Kanban",
-            "description": "Unified Kanban view for Build, Purchase, and Sales Orders",
-            "icon": "ti:layout-kanban",
-            "source": self.plugin_static_file("Panel.js:renderWorkOrderKanbanPanel"),
-            "context": {
-                # Provide additional context data to the panel
-                "settings": self.get_settings_dict(),
-            },
-        })
-
-        return panels
+        return [
+            # Main Kanban board view
+            path(
+                "",
+                TemplateView.as_view(
+                    template_name="work_order_kanban/kanban_page.html"
+                ),
+                name="kanban-board",
+            ),
+        ]
 
     # Navigation tab in top menu (uses UserInterfaceMixin method)
     def get_ui_navigation_items(self, request, context: dict, **kwargs):
-        """Add a navigation tab to the top menu bar that opens the Kanban panel."""
+        """Add a navigation tab to the top menu bar that opens the Kanban page."""
 
         return [
             {
@@ -76,8 +72,9 @@ class WorkOrderKanban(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
                 "title": "Kanban",
                 "icon": "ti:layout-kanban",
                 "options": {
-                    # Simple URL path - InvenTree will handle routing to the plugin panel
-                    "url": "/kanban",
+                    # Link to the plugin URL endpoint
+                    # This will be accessible at /plugin/work-order-kanban/
+                    "url": f"/plugin/{self.slug}/",
                 },
             }
         ]
