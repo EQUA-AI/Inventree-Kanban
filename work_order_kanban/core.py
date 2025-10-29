@@ -2,12 +2,14 @@
 
 from plugin import InvenTreePlugin
 
-from plugin.mixins import SettingsMixin, UrlsMixin, UserInterfaceMixin
+from plugin.mixins import NavigationMixin, SettingsMixin, UrlsMixin, UserInterfaceMixin
 
 from . import PLUGIN_VERSION
 
 
-class WorkOrderKanban(SettingsMixin, UrlsMixin, UserInterfaceMixin, InvenTreePlugin):
+class WorkOrderKanban(
+    SettingsMixin, UrlsMixin, NavigationMixin, UserInterfaceMixin, InvenTreePlugin
+):
     """WorkOrderKanban - custom InvenTree plugin."""
 
     # Plugin metadata
@@ -29,6 +31,21 @@ class WorkOrderKanban(SettingsMixin, UrlsMixin, UserInterfaceMixin, InvenTreePlu
     # Disable admin settings UI for now (Settings.js has errors)
     # ADMIN_SOURCE = "Settings.js:renderPluginSettings"
 
+    # NavigationMixin configuration
+    # Creates a navigation tab in the top menu bar
+    NAVIGATION_TAB_NAME = "Kanban"
+    NAVIGATION_TAB_ICON = "ti:layout-kanban"
+
+    # Navigation links - uses Django URL pattern names
+    # Format: plugin:<plugin-slug>:<url-name>
+    NAVIGATION = [
+        {
+            "name": "Kanban Board",
+            "link": "plugin:work-order-kanban:kanban-board",
+            "icon": "ti:layout-kanban",
+        }
+    ]
+
     # Plugin settings (from SettingsMixin)
     # Ref: https://docs.inventree.org/en/latest/plugins/mixins/settings/
     SETTINGS = {
@@ -47,41 +64,62 @@ class WorkOrderKanban(SettingsMixin, UrlsMixin, UserInterfaceMixin, InvenTreePlu
         """Setup URL endpoints for this plugin.
 
         The URLs will be accessible at /plugin/work-order-kanban/<path>
+        We serve a simple HTML page that loads the React Kanban component.
         """
+        from django.http import HttpResponse
         from django.urls import path
 
+        def kanban_page(request):
+            """Serve a minimal HTML page that loads the React Kanban component."""
+            html = f"""
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Work Order Kanban</title>
+                <style>
+                    body {{
+                        margin: 0;
+                        padding: 0;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    }}
+                    #kanban-root {{
+                        width: 100%;
+                        height: 100vh;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div id="kanban-root"></div>
+                <script type="module">
+                    // Load the Kanban React component
+                    import {{ renderWorkOrderKanbanPanel }} from '{self.plugin_static_file("Panel.js")}';
+                    
+                    // Render the Kanban board
+                    const root = document.getElementById('kanban-root');
+                    if (root && renderWorkOrderKanbanPanel) {{
+                        renderWorkOrderKanbanPanel(root, {{
+                            user: {{
+                                username: "{request.user.username}",
+                                is_staff: {str(request.user.is_staff).lower()},
+                                is_superuser: {str(request.user.is_superuser).lower()}
+                            }},
+                            settings: {self.get_settings_dict()},
+                            pluginSlug: "{self.slug}"
+                        }});
+                    }} else {{
+                        root.innerHTML = '<div style="padding: 20px; color: red;">Error: Could not load Kanban component</div>';
+                    }}
+                </script>
+            </body>
+            </html>
+            """
+            return HttpResponse(html, content_type="text/html")
+
         return [
-            # Main Kanban board view
-            path("", self.view_kanban, name="kanban-board"),
-        ]
-
-    def view_kanban(self, request):
-        """Render the Kanban board page."""
-        from django.shortcuts import render
-
-        context = {
-            "plugin": self,
-            "settings": self.get_settings_dict(),
-        }
-
-        return render(request, "work_order_kanban/kanban_page.html", context)
-
-    # Navigation tab in top menu (uses UserInterfaceMixin method)
-    def get_ui_navigation_items(self, request, context: dict, **kwargs):
-        """Add a navigation tab to the top menu bar that opens the Kanban page."""
-
-        return [
-            {
-                "key": "kanban-page",
-                "title": "Kanban",
-                "icon": "ti:layout-kanban",
-                "options": {
-                    # URL path in the frontend - InvenTree's React SPA will route this
-                    # to the backend Django URL at /plugin/<slug>/
-                    # Note: Do NOT include /plugin/ prefix in navigation URLs
-                    "url": f"/{self.slug}/",
-                },
-            }
+            # Main Kanban board page
+            path("", kanban_page, name="kanban-board"),
         ]
 
     # Custom dashboard items
