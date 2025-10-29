@@ -77,8 +77,8 @@ class WorkOrderKanban(SettingsMixin, UrlsMixin, UserInterfaceMixin, InvenTreePlu
                 "icon": "ti:layout-kanban",
                 "options": {
                     # Link to the plugin URL endpoint
-                    # This will be accessible at /plugin/work-order-kanban/
-                    "url": f"/plugin/{self.slug}/",
+                    # InvenTree's React SPA adds /web prefix, so /web/plugin/<slug>/ routes to /plugin/<slug>/
+                    "url": f"/web/plugin/{self.slug}/",
                 },
             }
         ]
