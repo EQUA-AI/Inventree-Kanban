@@ -76,9 +76,10 @@ class WorkOrderKanban(SettingsMixin, UrlsMixin, UserInterfaceMixin, InvenTreePlu
                 "title": "Kanban",
                 "icon": "ti:layout-kanban",
                 "options": {
-                    # Link to the plugin URL endpoint
-                    # InvenTree's React SPA adds /web prefix, so /web/plugin/<slug>/ routes to /plugin/<slug>/
-                    "url": f"/web/plugin/{self.slug}/",
+                    # Use Django URL name pattern for plugin URLs
+                    # Format: plugin:<plugin-slug>:<url-name>
+                    # This references the 'kanban-board' URL name from setup_urls()
+                    "url": f"plugin:{self.slug}:kanban-board",
                 },
             }
         ]
