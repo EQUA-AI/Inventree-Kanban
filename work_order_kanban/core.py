@@ -49,18 +49,22 @@ class WorkOrderKanban(SettingsMixin, UrlsMixin, UserInterfaceMixin, InvenTreePlu
         The URLs will be accessible at /plugin/work-order-kanban/<path>
         """
         from django.urls import path
-        from django.views.generic import TemplateView
 
         return [
             # Main Kanban board view
-            path(
-                "",
-                TemplateView.as_view(
-                    template_name="work_order_kanban/kanban_page.html"
-                ),
-                name="kanban-board",
-            ),
+            path("", self.view_kanban, name="kanban-board"),
         ]
+
+    def view_kanban(self, request):
+        """Render the Kanban board page."""
+        from django.shortcuts import render
+
+        context = {
+            "plugin": self,
+            "settings": self.get_settings_dict(),
+        }
+
+        return render(request, "work_order_kanban/kanban_page.html", context)
 
     # Navigation tab in top menu (uses UserInterfaceMixin method)
     def get_ui_navigation_items(self, request, context: dict, **kwargs):
