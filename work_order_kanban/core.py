@@ -76,10 +76,9 @@ class WorkOrderKanban(SettingsMixin, UrlsMixin, UserInterfaceMixin, InvenTreePlu
                 "title": "Kanban",
                 "icon": "ti:layout-kanban",
                 "options": {
-                    # Use Django URL name pattern for plugin URLs
-                    # Format: plugin:<plugin-slug>:<url-name>
-                    # This references the 'kanban-board' URL name from setup_urls()
-                    "url": f"plugin:{self.slug}:kanban-board",
+                    # URL path to the plugin page
+                    # UrlsMixin registers this at /plugin/<slug>/
+                    "url": f"/plugin/{self.slug}/",
                 },
             }
         ]
